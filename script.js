@@ -2,50 +2,31 @@ const choices = ["Rock", "Paper", "Scissors"];
 
 let playerScore = 0;
 let computerScore = 0;
-let gameStarted = false;
-let gameOver = false;
+let gameActive = false;
 
-const buttons = document.querySelectorAll(".choice-btn");
+const startBtn = document.getElementById("start-btn");
+const restartBtn = document.getElementById("restart-btn");
+const choiceBtns = document.querySelectorAll(".choice-btn");
 
-const playerChoiceText =
-  document.getElementById("player-choice");
-
-const computerChoiceText =
-  document.getElementById("computer-choice");
-
-const resultText =
-  document.getElementById("result");
-
-const playerScoreText =
-  document.getElementById("player-score");
-
-const computerScoreText =
-  document.getElementById("computer-score");
-
-const turnText =
-  document.getElementById("turn");
-
-const startBtn =
-  document.getElementById("start-btn");
-
-const restartBtn =
-  document.getElementById("restart-btn");
+const playerChoice = document.getElementById("player-choice");
+const computerChoice = document.getElementById("computer-choice");
+const playerScoreEl = document.getElementById("player-score");
+const computerScoreEl = document.getElementById("computer-score");
+const resultEl = document.getElementById("result");
+const turnEl = document.getElementById("turn");
 
 function enableChoices(enable) {
-  buttons.forEach(btn => {
+  choiceBtns.forEach(btn => {
     btn.disabled = !enable;
   });
 }
 
 function startGame() {
-  gameStarted = true;
-  gameOver = false;
+  gameActive = true;
 
-  turnText.textContent =
-    "Your Turn! Choose Rock, Paper or Scissors";
-
-  resultText.textContent =
-    "Game Started!";
+  turnEl.textContent = "Choose Rock, Paper or Scissors";
+  resultEl.textContent = "Game Started!";
+  resultEl.className = "";
 
   enableChoices(true);
 }
@@ -53,127 +34,101 @@ function startGame() {
 function restartGame() {
   playerScore = 0;
   computerScore = 0;
+  gameActive = false;
 
-  gameStarted = false;
-  gameOver = false;
+  playerChoice.textContent = "-";
+  computerChoice.textContent = "-";
 
-  playerScoreText.textContent = 0;
-  computerScoreText.textContent = 0;
+  playerScoreEl.textContent = "0";
+  computerScoreEl.textContent = "0";
 
-  playerChoiceText.textContent = "-";
-  computerChoiceText.textContent = "-";
+  resultEl.textContent = "Press Start";
+  resultEl.className = "";
 
-  resultText.textContent =
-    "Make your move!";
-
-  turnText.textContent =
-    "Press Start to Play";
-
-  resultText.className = "";
+  turnEl.textContent = "Press Start To Play";
 
   enableChoices(false);
 }
 
+function getWinner(player, computer) {
+  if (player === computer) return "tie";
+
+  if (
+    (player === "Rock" && computer === "Scissors") ||
+    (player === "Paper" && computer === "Rock") ||
+    (player === "Scissors" && computer === "Paper")
+  ) {
+    return "player";
+  }
+
+  return "computer";
+}
+
+function playRound(playerMove) {
+
+  if (!gameActive) return;
+
+  const computerMove =
+    choices[Math.floor(Math.random() * choices.length)];
+
+  playerChoice.textContent = playerMove;
+  computerChoice.textContent = computerMove;
+
+  const winner = getWinner(playerMove, computerMove);
+
+  resultEl.className = "";
+
+  if (winner === "tie") {
+
+    resultEl.textContent = "🤝 It's a Tie!";
+    resultEl.classList.add("tie");
+
+  } else if (winner === "player") {
+
+    playerScore++;
+    resultEl.textContent = "🎉 You Win!";
+    resultEl.classList.add("win");
+
+  } else {
+
+    computerScore++;
+    resultEl.textContent = "💻 Computer Wins!";
+    resultEl.classList.add("lose");
+  }
+
+  playerScoreEl.textContent = playerScore;
+  computerScoreEl.textContent = computerScore;
+
+  if (playerScore >= 5) {
+
+    resultEl.textContent = "🏆 YOU WON THE GAME!";
+    resultEl.className = "win";
+
+    turnEl.textContent = "Game Over";
+    gameActive = false;
+
+    enableChoices(false);
+
+  } else if (computerScore >= 5) {
+
+    resultEl.textContent = "💀 COMPUTER WON THE GAME!";
+    resultEl.className = "lose";
+
+    turnEl.textContent = "Game Over";
+    gameActive = false;
+
+    enableChoices(false);
+  }
+}
+
 startBtn.addEventListener("click", startGame);
+
 restartBtn.addEventListener("click", restartGame);
 
-buttons.forEach(button => {
-  button.addEventListener("click", () => {
-
-    if (!gameStarted || gameOver) return;
-
-    const playerChoice =
-      button.dataset.choice;
-
-    turnText.textContent =
-      "Computer is choosing...";
-
-    setTimeout(() => {
-
-      const computerChoice =
-        choices[Math.floor(Math.random() * 3)];
-
-      playerChoiceText.textContent =
-        playerChoice;
-
-      computerChoiceText.textContent =
-        computerChoice;
-
-      let result = "";
-
-      resultText.className = "";
-
-      if (playerChoice === computerChoice) {
-
-        result = "🤝 It's a Tie!";
-        resultText.classList.add("tie");
-
-      } else if (
-        (playerChoice === "Rock" &&
-          computerChoice === "Scissors") ||
-
-        (playerChoice === "Paper" &&
-          computerChoice === "Rock") ||
-
-        (playerChoice === "Scissors" &&
-          computerChoice === "Paper")
-      ) {
-
-        result = "🎉 You Win This Round!";
-        playerScore++;
-        resultText.classList.add("win");
-
-      } else {
-
-        result = "💻 Computer Wins This Round!";
-        computerScore++;
-        resultText.classList.add("lose");
-      }
-
-      resultText.textContent = result;
-
-      playerScoreText.textContent =
-        playerScore;
-
-      computerScoreText.textContent =
-        computerScore;
-
-      // Game Winner
-      if (playerScore === 5) {
-
-        gameOver = true;
-        enableChoices(false);
-
-        resultText.textContent =
-          "🏆 Congratulations! You Won The Game!";
-
-        resultText.className = "win";
-
-        turnText.textContent =
-          "Game Over - Press Restart";
-
-      } else if (computerScore === 5) {
-
-        gameOver = true;
-        enableChoices(false);
-
-        resultText.textContent =
-          "💻 Computer Won The Game!";
-
-        resultText.className = "lose";
-
-        turnText.textContent =
-          "Game Over - Press Restart";
-
-      } else {
-
-        turnText.textContent =
-          "Your Turn! Choose Again";
-      }
-
-    }, 500);
+choiceBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    playRound(btn.dataset.choice);
   });
 });
 
-// Initial state
 restartGame();
